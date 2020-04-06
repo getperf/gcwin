@@ -3,7 +3,7 @@ gcwin
 
 [![Test Status](https://github.com/getperf/gcwin/workflows/test/badge.svg?branch=master)][actions]
 [![Coverage Status](https://coveralls.io/repos/getperf/gcwin/badge.svg?branch=master)][coveralls]
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)][license]
 [![GoDoc](https://godoc.org/github.com/getperf/gcwin?status.svg)][godoc]
 
 [actions]: https://github.com/getperf/gcwin/actions?workflow=test

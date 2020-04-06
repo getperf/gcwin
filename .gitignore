@@ -1,0 +1,6 @@
+/dist/*
+/build/*
+/vendor/*
+/gcwin
+/gcwin.exe
+/gcwin.gz

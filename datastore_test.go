@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-func TestNewCollectStageBase(t *testing.T) {
+func TestNewDatastoreBase(t *testing.T) {
 	home, _ := ioutil.TempDir("", "ptune")
 	defer os.RemoveAll(home)
-	stage := NewCollectStageBase(home, "HW", time.Now())
+	stage := NewDatastoreBase(home, "HW", time.Now())
 	absDir := strings.TrimPrefix(stage.AbsDir(), home)
 	t.Log("Dir : ", absDir)
 	if len(absDir) == 0 {
@@ -22,7 +22,7 @@ func TestNewCollectStageBase(t *testing.T) {
 	}
 }
 
-func TestNewCollectStage(t *testing.T) {
+func TestNewDatastore(t *testing.T) {
 	home, _ := ioutil.TempDir("", "ptune")
 	defer os.RemoveAll(home)
 	// config := NewConfig(home, NewConfigEnv())
@@ -33,8 +33,8 @@ func TestNewCollectStage(t *testing.T) {
 	date := "2020-01-20 11:00:00"
 	now, _ := time.Parse("2006-01-02 15:04:05", date)
 
-	// stage, err := config.NewCollectStage("HW", now)
-	stage := NewCollectStageBase(home, "HW", now)
+	// stage, err := config.NewDatastore("HW", now)
+	stage := NewDatastoreBase(home, "HW", now)
 	// if err != nil {
 	// 	t.Error("new out log", err)
 	// }

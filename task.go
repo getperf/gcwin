@@ -17,11 +17,11 @@ import (
 )
 
 type Task struct {
-	Collector    *Collector
-	CollectStage *CollectStage
-	Pid          int      /**< Collector process id */
-	Status       ProcMode /**< Process status */
-	StatTimeout  int
+	Collector   *Collector
+	Datastore   *Datastore
+	Pid         int      /**< Collector process id */
+	Status      ProcMode /**< Process status */
+	StatTimeout int
 
 	StartTime time.Time /**< Start time(UTC) */
 	EndTime   time.Time /**< End time(UTC) */

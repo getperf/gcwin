@@ -2,9 +2,9 @@ package gcwin
 
 import (
 	"context"
-	"crypto/md5"
+	// "crypto/md5"
 	"fmt"
-	"io"
+	// "io"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -21,7 +21,7 @@ import (
 
 func (c *Config) InitAgent() error {
 	createDirs := []string{
-		c.OutDir, c.WorkDir, c.WorkCommonDir, c.ArchiveDir, c.SslDir,
+		c.OutDir, c.WorkDir, c.WorkCommonDir, c.ArchiveDir,
 	}
 	for _, createDir := range createDirs {
 		if err := os.MkdirAll(createDir, 0777); err != nil {
@@ -86,34 +86,33 @@ func (config *Config) CheckHAStatus() error {
 }
 
 func (config *Config) AuthLicense(expire int) error {
-	schedule := config.Schedule
-	log.Debug("AuthLicense")
-	if schedule == nil {
-		return fmt.Errorf("schedule not found for auth license")
-	}
-	license := schedule.License
-	if license == nil {
-		return fmt.Errorf("license not found for auth license")
-	}
-	log.Debug("HOST CHECK", strings.Compare(license.Hostname, config.Host))
-	if strings.Compare(license.Hostname, config.Host) != 0 {
-		return fmt.Errorf("invalid license host : [%s, %s]", license.Hostname, config.Host)
-	}
-	currentDate := GetCurrentTime(expire, YYYYMMDD)
-	oldFlag := strings.Compare(license.Expired, currentDate)
-	log.Debugf("AuthLicense %v", oldFlag)
-	log.Debugf("AuthLicense %v %v", currentDate, license.Expired)
-	if strings.Compare(license.Expired, currentDate) == -1 {
-		return fmt.Errorf("invalid license expired : %s < %s",
-			currentDate, license.Expired)
-	}
-	// オリジナルは MD5 ライブラリで 40桁(320bit)のハッシュを返すが、
-	// Go ライブラリの場合、32桁(256bit)のハッシュとなり、ロジックが
-	// 異なる。実装は保留し、ハッシュチェックはスキップする
-	h := md5.New()
-	io.WriteString(h, config.Host)
-	io.WriteString(h, license.Expired)
-	io.WriteString(h, schedule.SiteKey)
+	// schedule := config.Schedule
+	// log.Debug("AuthLicense")
+	// if schedule == nil {
+	// 	return fmt.Errorf("schedule not found for auth license")
+	// }
+	// if license == nil {
+	// 	return fmt.Errorf("license not found for auth license")
+	// }
+	// log.Debug("HOST CHECK", strings.Compare(license.Hostname, config.Host))
+	// if strings.Compare(license.Hostname, config.Host) != 0 {
+	// 	return fmt.Errorf("invalid license host : [%s, %s]", license.Hostname, config.Host)
+	// }
+	// currentDate := GetCurrentTime(expire, YYYYMMDD)
+	// oldFlag := strings.Compare(license.Expired, currentDate)
+	// log.Debugf("AuthLicense %v", oldFlag)
+	// log.Debugf("AuthLicense %v %v", currentDate, license.Expired)
+	// if strings.Compare(license.Expired, currentDate) == -1 {
+	// 	return fmt.Errorf("invalid license expired : %s < %s",
+	// 		currentDate, license.Expired)
+	// }
+	// // オリジナルは MD5 ライブラリで 40桁(320bit)のハッシュを返すが、
+	// // Go ライブラリの場合、32桁(256bit)のハッシュとなり、ロジックが
+	// // 異なる。実装は保留し、ハッシュチェックはスキップする
+	// h := md5.New()
+	// io.WriteString(h, config.Host)
+	// io.WriteString(h, license.Expired)
+	// io.WriteString(h, schedule.SiteKey)
 	// checksum := h.Sum(nil)
 	//   if license.Code != fmt.Sprintf("%x", checksum) {
 	// return fmt.Errorf("invalid license code : %s", license.Code)
@@ -125,39 +124,40 @@ func (config *Config) UnzipSSLConf() error {
 	// sslPath := config.GetWorkfilePath("sslconf.zip")
 	sslPath := filepath.Join(config.WorkCommonDir, "sslconf.zip")
 	log.Info("unzip ", sslPath)
-	return Unzip(sslPath, config.Home)
+	// return Unzip(sslPath, config.Home)
+	return nil
 }
 
 func (config *Config) PostTask(task *Task) {
-	outLog := task.OutLog
-	id := outLog.RelDir()
+	datastore := task.Datastore
+	id := datastore.RelDir()
 	// elapse := task.EndTime.Sub(task.StartTime)
 	log.Info("end task [", id, "]")
-	if err := config.SaveReport(task, outLog); err != nil {
+	if err := config.SaveReport(task, datastore); err != nil {
 		log.Error("report failed ", err)
 	}
 	log.Debug("check send enable ", config.Schedule.RemhostEnable)
 	if config.Schedule.RemhostEnable == true {
-		if err := config.ArchiveData(task, outLog); err != nil {
+		if err := config.ArchiveData(task, datastore); err != nil {
 			log.Error("zip failed ", err)
 			return
 		}
-		if err := config.SendCollectorDataAll(outLog); err != nil {
+		if err := config.SendCollectorDataAll(datastore); err != nil {
 			log.Error("send failed ", err)
 			return
 		}
 	}
-	if err := config.PurgeData(task, outLog); err != nil {
+	if err := config.PurgeData(task, datastore); err != nil {
 		log.Error("purge failed ", err)
 		return
 	}
 }
 
-func (config *Config) SaveReport(task *Task, outLog *OutLog) error {
+func (config *Config) SaveReport(task *Task, datastore *Datastore) error {
 	yaml, err := task.MakeReport()
 	fileName := fmt.Sprintf("stat_%s.log", task.Collector.StatName)
-	log.Debug("make report ", outLog.RelDir())
-	filePath := filepath.Join(outLog.AbsDir(), fileName)
+	log.Debug("make report ", datastore.RelDir())
+	filePath := filepath.Join(datastore.AbsDir(), fileName)
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("write report file %s: %s", filePath, err)
@@ -172,14 +172,15 @@ func (config *Config) SaveReport(task *Task, outLog *OutLog) error {
 // * {stat}/{date}/{time} ディレクトリパスを作成します。
 // * ログ保存ディレクトリ(ODir)に移動します。
 // * 次のコマンドと同じ zip 圧縮。zip -r arcxxx.zip ODIR
-func (config *Config) ArchiveData(task *Task, outLog *OutLog) error {
-	if outLog == nil {
+func (config *Config) ArchiveData(task *Task, datastore *Datastore) error {
+	if datastore == nil {
 		return fmt.Errorf("output log is nil")
 	}
-	zipFile := outLog.ZipFile(config.GetServiceOrHostName())
+	zipFile := datastore.ZipFile(config.GetServiceOrHostName())
 	zipPath := config.GetArchivefilePath(zipFile)
-	log.Info("archive ", zipFile)
-	return Zip(zipPath, config.OutDir, outLog.RelDir())
+	log.Info("archive ", zipPath)
+	// return Zip(zipPath, config.OutDir, datastore.RelDir())
+	return nil
 }
 
 func (config *Config) SendCollectorData(zip string) error {
@@ -203,11 +204,11 @@ func (config *Config) SendCollectorData(zip string) error {
 	}
 }
 
-func (config *Config) SendCollectorDataAll(outLog *OutLog) error {
+func (config *Config) SendCollectorDataAll(datastore *Datastore) error {
 	recoveryHour := config.Schedule.RecoveryHour
 	hostName := config.GetServiceOrHostName()
-	oldZip := outLog.OldZipFile(hostName, recoveryHour)
-	zipPrefix := fmt.Sprintf("arc_%s__%s_", hostName, outLog.StatName)
+	oldZip := datastore.OldZipFile(hostName, recoveryHour)
+	zipPrefix := fmt.Sprintf("arc_%s__%s_", hostName, datastore.StatName)
 	zips, err := ioutil.ReadDir(config.ArchiveDir)
 	if err != nil {
 		return err
@@ -229,10 +230,10 @@ func (config *Config) SendCollectorDataAll(outLog *OutLog) error {
 	return nil
 }
 
-func (config *Config) PurgeData(task *Task, outLog *OutLog) error {
+func (config *Config) PurgeData(task *Task, datastore *Datastore) error {
 	saveHour := config.Schedule.SaveHour
 	logDir := config.OutDir
-	purgeTime := outLog.StartTime.Add(-1 * time.Hour * time.Duration(saveHour))
+	purgeTime := datastore.StartTime.Add(-1 * time.Hour * time.Duration(saveHour))
 	dateDirs, err := ioutil.ReadDir(logDir)
 	if err != nil {
 		return err
@@ -269,39 +270,40 @@ func (config *Config) PurgeData(task *Task, outLog *OutLog) error {
 
 // CheckLicense はライセンスファイルをダウンロードし、ライセンスをチェックします
 func (config *Config) CheckLicense(expired int) error {
-	retry := DEFAULT_SOAP_RETRY
-	authOk := false
+	// retry := DEFAULT_SOAP_RETRY
+	// authOk := false
 
-	for authOk == false && retry > 0 {
-		if err := config.AuthLicense(expired); err == nil {
-			authOk = true
-			break
-		} else {
-			log.Info("auth license error : ", err)
-		}
-		log.Info("auth error resync License.txt ", retry)
-		if err := config.DownloadLicense(); err != nil {
-			log.Error("REMHOST_LICENSE web service failed ", err)
-		} else if err := config.UnzipSSLConf(); err != nil {
-			log.Error("unzip sslconf.zip failed ", err)
-		} else {
-			if err := config.LoadLicense(); err != nil {
-				log.Error("can't load ssl license ", err)
-			} else if err := config.AuthLicense(expired); err == nil {
-				authOk = true
-				continue
-			}
-		}
-		if retry != DEFAULT_SOAP_RETRY {
-			time.Sleep(time.Second * CHECK_LICENSE_INTERVAL)
-		}
-		retry--
-	}
-	if authOk {
-		return nil
-	} else {
-		return fmt.Errorf("license check failed")
-	}
+	// for authOk == false && retry > 0 {
+	// 	if err := config.AuthLicense(expired); err == nil {
+	// 		authOk = true
+	// 		break
+	// 	} else {
+	// 		log.Info("auth license error : ", err)
+	// 	}
+	// 	log.Info("auth error resync License.txt ", retry)
+	// 	if err := config.DownloadLicense(); err != nil {
+	// 		log.Error("REMHOST_LICENSE web service failed ", err)
+	// 	} else if err := config.UnzipSSLConf(); err != nil {
+	// 		log.Error("unzip sslconf.zip failed ", err)
+	// 	} else {
+	// 		if err := config.LoadLicense(); err != nil {
+	// 			log.Error("can't load ssl license ", err)
+	// 		} else if err := config.AuthLicense(expired); err == nil {
+	// 			authOk = true
+	// 			continue
+	// 		}
+	// 	}
+	// 	if retry != DEFAULT_SOAP_RETRY {
+	// 		time.Sleep(time.Second * CHECK_LICENSE_INTERVAL)
+	// 	}
+	// 	retry--
+	// }
+	// if authOk {
+	// 	return nil
+	// } else {
+	// 	return fmt.Errorf("license check failed")
+	// }
+	return nil
 }
 
 func (config *Config) DownloadLicense() error {
@@ -372,13 +374,13 @@ func (config *Config) RunTask(c *Collector, count int, tasks chan<- *Task) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	ch := make(chan bool, 1)
-	outLog, err := config.NewOutLogCurrent(c.StatName)
+	datastore, err := config.NewDatastoreCurrent(c.StatName)
 	if err != nil {
 		log.Error("new out log ", err)
 	}
-	task := NewTask(c, outLog.AbsDir(), config.ScriptDir)
-	task.OutLog = outLog
-	id := outLog.RelDir()
+	task := NewTask(c, datastore.AbsDir(), config.ScriptDir)
+	task.Datastore = datastore
+	id := datastore.RelDir()
 	log.Info("run task [", id, "]")
 	log.Debugf("run task COLLECTOR %d %s", c.Id, c.StatName)
 	go func(ctx context.Context) {
@@ -406,7 +408,7 @@ func (config *Config) RunTask(c *Collector, count int, tasks chan<- *Task) {
 
 func (config *Config) RunWithContext(ctx context.Context) error {
 	config.InitAgent()
-	config.LoadLicense()
+	// config.LoadLicense()
 	log.Info("run agent with conext")
 	if err := config.CheckLicense(0); err != nil {
 		return fmt.Errorf("License ... NG : %s", err)

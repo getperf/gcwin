@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/getperf/gcwin/cmd"
+	"github.com/getperf/gcagent/cmd"
 	_ "github.com/kardianos/minwinsvc"
 )
 

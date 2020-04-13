@@ -1,6 +1,6 @@
 VERSION = $(shell godzil show-version)
 CURRENT_REVISION = $(shell git rev-parse --short HEAD)
-BUILD_LDFLAGS = "-s -w -X github.com/getperf/gcwin.revision=$(CURRENT_REVISION)"
+BUILD_LDFLAGS = "-s -w -X github.com/getperf/gcagent.revision=$(CURRENT_REVISION)"
 u := $(if $(update),-u)
 
 export GO111MODULE=on
@@ -31,11 +31,11 @@ lint: devel-deps
 
 .PHONY: build
 build:
-	go build -ldflags=$(BUILD_LDFLAGS) ./cmd/gcwin
+	go build -ldflags=$(BUILD_LDFLAGS) ./cmd/gcagent
 
 .PHONY: install
 install:
-	go install -ldflags=$(BUILD_LDFLAGS) ./cmd/gcwin
+	go install -ldflags=$(BUILD_LDFLAGS) ./cmd/gcagent
 
 .PHONY: release
 release: devel-deps

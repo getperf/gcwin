@@ -14,17 +14,16 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "gcwin",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Use:   "gcagent",
+	Short: "Inventory collector agent.",
+	Long:  `Getconfig inventory collector agent.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		// // フラグ名で値を取得する
+		// if config, err := cmd.PersistentFlags().GetString("config"); err == nil {
+		// 	cfgFile = config
+		// }
+		fmt.Println("Root command, config : ", cfgFile)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -43,7 +42,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gcwin.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "gcagent.toml", "config file")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -63,14 +62,15 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".gcwin" (without extension).
+		// Search config in home directory with name ".gcagent" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".gcwin")
+		viper.SetConfigName(".gcagent")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
+	fmt.Printf("config : %v\n", viper.ConfigFileUsed())
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}

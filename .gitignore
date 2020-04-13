@@ -1,6 +1,7 @@
 /dist/*
+/var/*
 /build/*
 /vendor/*
-/gcwin
-/gcwin.exe
-/gcwin.gz
+/gcagent
+/gcagent.exe
+/gcagent.gz

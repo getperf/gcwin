@@ -1,0 +1,12 @@
+# --------- WEB Service URL ---------------------------------
+# WEB Service enable, If it is false, the agent doesn't send performance data.
+remhost_enable = true
+
+# Admin management web service url.
+url_cm = "https://192.168.10.10:57443/axis2/services/GetperfService"
+
+# Data management web service url.
+url_pm = "https://192.168.10.10:58443/axis2/services/GetperfService"
+
+# Site key.
+site_key = "site1"

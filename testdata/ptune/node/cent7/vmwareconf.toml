@@ -1,0 +1,5 @@
+# Required VMWare VM Endpoint
+#
+server = "cent7"
+is_remote = true
+user_id = "vmmanager01"

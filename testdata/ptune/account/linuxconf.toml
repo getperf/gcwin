@@ -1,0 +1,16 @@
+# Linux account settings
+# Enter account information for OS general users
+# Please specify the user id key in [[accounts.{User ID}]]
+# 
+# example:
+#    [[accounts.admin02]]
+#    user = "someuser"
+#    password = "P@ssword"
+
+[[accounts.admin01]]
+user = "psadmin"
+password = "psadmin"
+
+[[accounts.admin02]]
+user = "someuser"
+password = "P@ssword"

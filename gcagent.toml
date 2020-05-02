@@ -29,9 +29,6 @@ debug_console = false
 # Log rotation generation
 # log_rotation = 5
 
-# Output japanese of the message
-# log_localize = true
-
 # --------- HA state monitoring setting --------------------------------
 # The presence or absence of state detection of node
 # hanode_enable = false
@@ -73,36 +70,41 @@ debug_console = false
 # Site key.
 # site_key = "site1"
 
-# Collecting category monitoring settings
-# Include conf
+# service_url = "0.0.0.0:59000"
 
-
-#---------- Monitor command config (HW resource) -----------------------------------
+#---------- Monitor job config (HW resource)
 # Each platform collector setting.
-[collectors]
+[jobs]
 
-  [collectors.linux]
-  #Collecting enable (true or false)
-  stat_enable = true
-  
-  #Interval sec (> 300)
-  stat_interval = 300
-  
-  #Timeout sec
-  stat_timeout = 340
-  
-  #Run mode( concurrent or serial)
-  stat_mode = "concurrent"
+  # # Collecting enable (true or false)
+  # enable = true
+  # #Interval sec (> 300)
+  # interval = 300
+  # #Timeout sec
+  # timeout = 340
 
-  [collectors.go]
-  #Collecting enable (true or false)
-  stat_enable = true
+  [jobs.linuxconf]
+  enable = true
+  interval = 300
+  timeout = 340
   
-  #Interval sec (> 300)
-  stat_interval = 300
-  
-  #Timeout sec
-  stat_timeout = 340
-  
-  #Run mode( concurrent or serial)
-  stat_mode = "concurrent"
+  [jobs.golangconf]
+  enable = true
+  interval = 300
+  timeout = 340
+
+# [targets]
+
+#   [targets.getperf]
+
+#   ip = "192.168.10.1"
+#   account_id = "admin"
+#   # user = "admin"
+#   # password = "password"
+
+# [accounts]
+
+#   [accounts.admin]
+
+#   user = "admin"
+#   password = "password"

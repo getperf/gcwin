@@ -2,14 +2,13 @@ package agent
 
 import (
 	"fmt"
-	"path/filepath"
 
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
 )
 
-func SetLog(home string) error {
-	logPath := filepath.Join(home, "_log", "getperf_log.%Y%m%d")
+func SetLog(logPath string) error {
 	rl, err := rotatelogs.New(logPath)
 	if err != nil {
 		return fmt.Errorf("set log %s", err)
@@ -35,5 +34,11 @@ func SetLogLevel(level int) error {
 	default:
 		return fmt.Errorf("unkown log level %d", level)
 	}
+	return nil
+}
+
+func SetLogForeground() error {
+	log.SetFormatter(&log.TextFormatter{ForceColors: true})
+	log.SetOutput(colorable.NewColorableStdout())
 	return nil
 }

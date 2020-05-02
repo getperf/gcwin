@@ -9,8 +9,8 @@ New features:
     * config
     * agent
   * 機能追加
+    * inventory 収集 
     * http サービス
-    * inventory 収集
     * デーモン管理実装
   * 結合試験
 

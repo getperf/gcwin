@@ -1,0 +1,5 @@
+# Required VMWare VM Endpoint
+#
+server = "win2016"
+is_remote = true
+user_id = "vmmanager01"

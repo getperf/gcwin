@@ -1,0 +1,16 @@
+
+# Required Endpoint Windows server name.
+server = "win2016"
+
+[[commands]]
+# Describe the additional command list. Added to the default command list for
+# Windows Inventory scenarios. The text parameter using escape codes such as
+# '\"', '\\', See these example,
+level = 0      # command level [0-2]
+id = "osver"   # unique key
+text = "Get-ItemProperty \"HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\" | FL"
+
+[[commands]]
+level = 0
+id = "syscon"
+text = "Get-WmiObject -Class Win32_ComputerSystem"

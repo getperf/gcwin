@@ -1,0 +1,9 @@
+
+# Required Linux Endpoint
+# 
+server = "ostrich"
+is_remote = false
+ip = ""
+user_id = ""
+specific_user = ""
+specific_password = ""

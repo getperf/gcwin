@@ -1,0 +1,11 @@
+
+# Required Endpoint Windows server name.
+server = "desktop-n8a02v9"
+
+[[commands]]
+# Describe the additional command list. Added to the default command list for
+# Windows Inventory scenarios. The text parameter using escape codes such as
+# '\"', '\\', See these example,
+# id = "osver"   # unique key
+# level = 0      # command level [0-2]
+# text = "Get-ItemProperty \"HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\" | FL"

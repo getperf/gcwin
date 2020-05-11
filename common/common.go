@@ -78,7 +78,6 @@ func CheckDirectory(path string) (bool, error) {
 // CheckFile はファイルの存在確認をします。
 func CheckFile(path string) (bool, error) {
 	fi, err := os.Stat(path)
-	fmt.Printf("CHECKFILE : %s,fi=%v, err=%v", path, fi, err)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, fmt.Errorf("not found %s", path)
@@ -106,6 +105,19 @@ func CreateAndOpenFile(filePath string) (*os.File, error) {
 		return nil, errors.Wrap(err, "create node directory")
 	}
 	return os.OpenFile(filePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+}
+
+// RemoveAndCreateDir はディレクトリを再作成します。
+func RemoveAndCreateDir(filePath string) error {
+	if _, err := os.Stat(filePath); !os.IsNotExist(err) {
+		if err := os.RemoveAll(filePath); err != nil {
+			return errors.Wrap(err, "initialize directory")
+		}
+	}
+	if err := os.MkdirAll(filePath, 0777); err != nil {
+		return errors.Wrap(err, "initialize directory")
+	}
+	return nil
 }
 
 // CopyFile はファイルのコピーをします。

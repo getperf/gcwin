@@ -82,7 +82,7 @@ func (task *Task) RunWithContext(ctx context.Context) error {
 	if !ok {
 		log.Error("exporter not defined")
 	} else {
-		log.Info("Desc ", exp().Description())
+		log.Info("Desc ", exp().Label())
 		env := &exporter.Env{
 			Level:     0,
 			DryRun:    false,

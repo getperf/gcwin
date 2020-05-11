@@ -20,7 +20,6 @@ func TestServerConfigs(t *testing.T) {
 		t.Error("windows configs ", err)
 	}
 	servers, err = config.ServerConfigs("linuxconf")
-	t.Log("linuxconf size : ", len(servers))
 	if err != nil || len(servers) == 0 {
 		t.Error("linux configs ", err)
 	}

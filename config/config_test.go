@@ -35,6 +35,8 @@ func TestLoadConfig(t *testing.T) {
 	if err != nil {
 		t.Error("read in config ", err)
 	}
+	config.CheckConfig()
+	t.Log(config.Jobs["linuxconf"])
 	if config.Jobs["linuxconf"].Enable != true {
 		t.Error("read job parameter ", err)
 	}

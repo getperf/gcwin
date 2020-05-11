@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
-	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/BurntSushi/toml"
@@ -12,7 +12,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var testNodeDir = "../../testdata/ptune/node/windowsconf"
+var testNodeDir = "../../testdata/ptune/node"
+var tomlpath = testNodeDir + "/win2016/windowsconf.toml"
+
+// func init() {
+// 	tomlpath = filepath.Join(testNodeDir, "win2016", "windowsconf.toml")
+// }
 
 func createTestEnv() *exporter.Env {
 	datastore, _ := ioutil.TempDir("", "datasotre")
@@ -20,7 +25,7 @@ func createTestEnv() *exporter.Env {
 		Level:     0,
 		DryRun:    false,
 		Datastore: datastore,
-		NodeDir:   testNodeDir,
+		LocalExec: true,
 	}
 	return env
 }
@@ -29,8 +34,10 @@ func TestWindowsNormal(t *testing.T) {
 	exp := exporter.Exporters["windowsconf"]()
 	env := createTestEnv()
 	defer os.Remove(env.Datastore)
-	if err := exp.Run(env); err != nil {
-		t.Error(err)
+	if runtime.GOOS == "windows" {
+		if err := exp.Run(env); err != nil {
+			t.Error(err)
+		}
 	}
 }
 
@@ -45,7 +52,7 @@ func TestWindowsToml(t *testing.T) {
 
 func TestWindowsConfig(t *testing.T) {
 	var windows Windows
-	tomlpath := filepath.Join(testNodeDir, "win2016.toml")
+	// tomlpath := filepath.Join(testNodeDir, "win2016", "windowsconf.toml")
 	_, err := toml.DecodeFile(tomlpath, &windows)
 	if err != nil {
 		t.Error(err)
@@ -57,7 +64,7 @@ func TestWindowsInventoryCode(t *testing.T) {
 	var windows Windows
 	env := createTestEnv()
 	defer os.Remove(env.Datastore)
-	tomlpath := filepath.Join(testNodeDir, "win2016.toml")
+	// tomlpath := filepath.Join(testNodeDir, "win2016.toml")
 	_, err := toml.DecodeFile(tomlpath, &windows)
 	if err != nil {
 		t.Error(err)

@@ -24,9 +24,11 @@ type Config struct {
 	ExitFlagPath  string // Exit flag file
 	PidPath       string // PID absolute path
 	BaseDir       string // Executable file base directory
+	BinDir        string // Project specific Executable file directory
 	OutDir        string // Metric collection directory
 	NodeDir       string // Server info directory
 	AccountDir    string // Server account info directory
+	TemplateDir   string // Server template info directory
 	WorkDir       string // Work directory
 	WorkCommonDir string // Common work directory
 	ArchiveDir    string // Archive directory
@@ -35,6 +37,7 @@ type Config struct {
 
 	SaveHour     int    `toml:"save_hour"`     // Metric data retention(H)
 	RecoveryHour int    `toml:"recovery_hour"` // Log retransmission time [H]
+	RunLevel     int    `toml:"run_level"`     // Collection level. 0 means most
 	LogLevel     string `toml:"log_level"`     // Log level
 	LogRotation  int    `toml:"log_rotation"`  // Number of log rotation
 	ProxyEnable  bool   `toml:"proxy_enable"`  // HTTP proxy enabled
@@ -44,7 +47,8 @@ type Config struct {
 	ServiceUrl   string `toml:"service_url"`   // Web service URL (Configuration manager)
 	SiteKey      string `toml:"site_key"`      // Site key
 
-	Jobs map[string]Job `toml:"jobs"` // Job pids
+	DryRun bool
+	Jobs   map[string]*Job `toml:"jobs"` // Job pids
 }
 
 type ConfigEnv struct {
@@ -76,12 +80,13 @@ func NewConfig(home string, configEnv *ConfigEnv) *Config {
 	baseDir := home
 	// /tmp/go-build...ではないコンパイル済みバイナリからの実行かチェック
 	exe, err := os.Executable()
-	if err != nil && strings.Index(exe, "go-build") == -1 {
+	if err == nil && strings.Index(exe, "go-build") == -1 {
 		baseDir = filepath.Dir(exe)
 	} else {
-		log.Warn("failed to get program name in create config")
+		log.Warn("failed to get program name")
 		exe = ""
 	}
+	log.Info("set base directory ", baseDir)
 
 	// ファイルパス初期化
 	varDir := filepath.Join(home, "var")
@@ -104,13 +109,15 @@ func NewConfig(home string, configEnv *ConfigEnv) *Config {
 	config.BaseDir = baseDir
 
 	// ディレクトリ定義
-	config.OutDir = filepath.Join(varDir, "data")         // 採取データディレクトリ
-	config.NodeDir = filepath.Join(home, "node")          // バイナリディレクトリ
-	config.AccountDir = filepath.Join(baseDir, "account") // アカウントディレクトリ
-	config.WorkDir = filepath.Join(tmpDir, workDir)       // ワークディレクトリ
-	config.WorkCommonDir = filepath.Join(tmpDir)          // 共有ワークディレクトリ
-	config.ArchiveDir = filepath.Join(varDir, "arc")      // アーカイブ保存ディレクトリ
-	config.LogDir = filepath.Join(varDir, "log")          // アプリログディレクトリ
+	config.OutDir = filepath.Join(varDir, "data")           // 採取データディレクトリ
+	config.NodeDir = filepath.Join(home, "node/")           // 採取対象定義ディレクトリ
+	config.AccountDir = filepath.Join(baseDir, "account")   // アカウント定義ディレクトリ
+	config.TemplateDir = filepath.Join(baseDir, "template") // テンプレート定義ディレクトリ
+	config.BinDir = filepath.Join(home, "bin")              // プロジェクトバイナリ
+	config.WorkDir = filepath.Join(tmpDir, workDir)         // ワークディレクトリ
+	config.WorkCommonDir = filepath.Join(tmpDir)            // 共有ワークディレクトリ
+	config.ArchiveDir = filepath.Join(varDir, "arc")        // アーカイブ保存ディレクトリ
+	config.LogDir = filepath.Join(varDir, "log")            // アプリログディレクトリ
 
 	// SSL証明書定義
 	config.TslDir = filepath.Join(varDir, "network")
@@ -144,6 +151,7 @@ func (config *Config) GetBaseDirs() []*string {
 		&config.OutDir,
 		&config.NodeDir,
 		&config.AccountDir,
+		&config.TemplateDir,
 		&config.WorkDir,
 		&config.WorkCommonDir,
 		&config.ArchiveDir,
@@ -158,6 +166,7 @@ func (config *Config) CheckConfig() error {
 	}
 	for statName, job := range jobs {
 		log.Info("check ", statName)
+		job.Name = statName
 		if job.Timeout == 0 {
 			job.Timeout = job.Interval
 		}

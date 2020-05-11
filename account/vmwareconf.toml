@@ -1,0 +1,11 @@
+
+# VMWare account settings
+# Enter account information for vCenter users
+# Please specify the user id key in [[accounts.{User ID}]]
+# 
+# example:
+#    [[accounts.vmmanager01]]
+#
+#    url = "192.168.10.100"    # vCenter URL
+#    user = "test_user"
+#    password = "P@ssword"

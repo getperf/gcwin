@@ -11,8 +11,9 @@ import (
 	"text/template"
 	"time"
 
+	. "github.com/getperf/gcagent/common"
 	"github.com/getperf/gcagent/config"
-	"github.com/getperf/gcagent/exporter"
+	. "github.com/getperf/gcagent/exporter"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,11 +22,12 @@ func (e *Windows) configTest(config *config.Config) error {
 	return nil
 }
 
-func (e *Windows) Setup() {
+func (e *Windows) Setup(env *Env) error {
 	fmt.Printf("export '%s' through Windows platform\n", e.Server)
+	return nil
 }
 
-func (e *Windows) writeScript(doc io.Writer, env *exporter.Env) error {
+func (e *Windows) writeScript(doc io.Writer, env *Env) error {
 	tmpl, err := template.ParseFiles("powershell.tpl")
 	if err != nil {
 		return errors.Wrap(err, "failed read template")
@@ -44,7 +46,7 @@ func (e *Windows) writeScript(doc io.Writer, env *exporter.Env) error {
 	return nil
 }
 
-func (e *Windows) CreateScript(env *exporter.Env) error {
+func (e *Windows) CreateScript(env *Env) error {
 	log.Info("create temporary log dir for test ", env.Datastore)
 	e.ScriptPath = filepath.Join(env.Datastore, "get_windows_inventory.ps1")
 	outFile, err := os.OpenFile(e.ScriptPath,
@@ -57,12 +59,15 @@ func (e *Windows) CreateScript(env *exporter.Env) error {
 	return nil
 }
 
-func (e *Windows) Run(env *exporter.Env) error {
-	if err := e.CreateScript(env); err != nil {
-		return errors.Wrap(err, "run windows inventory")
-	}
+func (e *Windows) Run(env *Env) error {
 	if runtime.GOOS != "windows" {
 		return fmt.Errorf("windows powershell environment only")
+	}
+	if err := RemoveAndCreateDir(env.Datastore); err != nil {
+		return errors.Wrap(err, "prepare windows inventory datastore")
+	}
+	if err := e.CreateScript(env); err != nil {
+		return errors.Wrap(err, "prepare windows inventory script")
 	}
 	cmdPowershell := []string{
 		"powershell",
@@ -114,7 +119,7 @@ func (e *Windows) Run(env *exporter.Env) error {
 }
 
 func init() {
-	exporter.Add("windowsconf", func() exporter.Exporter {
+	AddExporter("windowsconf", func() Exporter {
 		return &Windows{
 			Server: "localhost",
 		}

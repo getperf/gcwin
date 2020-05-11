@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -31,6 +32,29 @@ func TestGetHostname(t *testing.T) {
 	t.Log(get)
 	if err != nil || len(get) < 1 {
 		t.Errorf("GetHostname() = %v", get)
+	}
+}
+
+func TestCheckFile(t *testing.T) {
+	var tests = []struct {
+		input   string
+		res     bool
+		keyword string
+	}{
+		{"../testdata/ptune/gcagent.toml", true, ""},
+		{"../testdata/ptune/hogehoge", false, "not found"},
+		{"../testdata/ptune", false, "is directory"},
+	}
+	for _, test := range tests {
+		ok, err := CheckFile(test.input)
+		if ok != test.res {
+			t.Errorf("%q = %v,%v", test.input, test.res, test.keyword)
+		}
+		if test.res == false {
+			if strings.Index(err.Error(), test.keyword) == -1 {
+				t.Error("check file error keyword")
+			}
+		}
 	}
 }
 
@@ -64,7 +88,7 @@ func TestGetParentAbsPath(t *testing.T) {
 
 func TestCheckDirectory(t *testing.T) {
 	tmpdir, _ := ioutil.TempDir("", "example")
-	defer os.Remove(tmpdir) // clean up
+	defer os.Remove(tmpdir)
 	var tests = []struct {
 		input string
 		want  bool
@@ -83,6 +107,21 @@ func TestCheckDirectory(t *testing.T) {
 	}
 }
 
+func TestRemoveAndCreateDir(t *testing.T) {
+	tmpdir, _ := ioutil.TempDir("", "example")
+	defer os.Remove(tmpdir)
+
+	path := filepath.Join(tmpdir, "hoge", "hoge")
+	err := RemoveAndCreateDir(path)
+	if err != nil {
+		t.Error("initialize directory")
+	}
+	ok, _ := CheckDirectory(path)
+	if !ok {
+		t.Error("initialize directory")
+	}
+}
+
 func TestCopyFile(t *testing.T) {
 	var tests = []struct {
 		input string
@@ -93,7 +132,7 @@ func TestCopyFile(t *testing.T) {
 		{"soap", false},
 	}
 	tmpfile, err := ioutil.TempFile("", "example")
-	defer os.Remove(tmpfile.Name()) // clean up
+	defer os.Remove(tmpfile.Name())
 	if err != nil {
 		t.Errorf("create tempfile")
 	}

@@ -1,0 +1,6 @@
+# Required Linux Endpoint
+#
+server = "cent7"
+is_remote = true
+ip = "192.168.0.5"
+user_id = "admin01"

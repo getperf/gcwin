@@ -8,13 +8,12 @@ import (
 	"github.com/getperf/gcagent/exporter"
 	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestLinuxDocs(t *testing.T) {
 	linux := &Linux{}
-	linux.Description()
-	linux.SampleConfig()
+	linux.Label()
+	linux.Config(exporter.TEMPLATE)
 }
 
 func TestLinuxInit(t *testing.T) {
@@ -28,13 +27,14 @@ func TestLinuxInit(t *testing.T) {
 }
 
 func TestLinuxConfig(t *testing.T) {
-	exporter := exporter.Exporters["linuxconf"]()
+	exp := exporter.Exporters["linuxconf"]()
 	linux := &Linux{}
-	t.Log(exporter.SampleConfig())
-	err := toml.Unmarshal([]byte(exporter.SampleConfig()), linux)
-	require.NoError(t, err)
+	t.Log(exp.Config(exporter.TEMPLATE))
 	t.Log(linux)
-	t.Log(exporter.(*Linux))
+	// err := toml.Unmarshal([]byte(exporter.SampleConfig()), linux)
+	// require.NoError(t, err)
+	// t.Log(linux)
+	t.Log(exp.(*Linux))
 }
 
 func TestLinuxUnkown(t *testing.T) {

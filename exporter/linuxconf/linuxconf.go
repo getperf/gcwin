@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/getperf/gcagent/exporter"
+	. "github.com/getperf/gcagent/exporter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,24 +13,23 @@ type Linux struct {
 	IsRemote bool   `toml:"is_remote"`
 	Ip       string `toml:"ip"`
 	UserId   string `toml:"user_id"`
-	User     string `toml:"specific_user`
-	Password string `toml:"specific_password`
+	User     string `toml:"specific_user"`
+	Password string `toml:"specific_password"`
 }
 
 var sampleScheduleConfig = `
   [jobs.linuxconf]
   enable = true
+  local_exec = true
   interval = 300
   timeout = 340
 `
 
-var sampleAccountConfig = `
-# Linux account settings
-# Enter account information for OS general users
-# Please specify the userid key in [[accounts.{User Id}]]
+var sampleTemplateConfig = `
+# Linux template settings
+# Enter template information for OS general users
 # 
 # example:
-#    [[accounts.admin02]]
 #    user = "someuser"
 #    password = "P@ssword"
 `
@@ -46,53 +45,54 @@ specific_user = "{{ .User }}"
 specific_password = "{{ .Password }}"
 `
 
-var commands = []exporter.Command{
+var commands = []Command{
 	{Level: 0, Id: "hostname", Text: "hostname -s"},
 }
 
-func (e *Linux) Description() string {
-	return "Gather Linux inventorys"
+func (e *Linux) Label() string {
+	return "Linux"
 }
 
-func (e *Linux) SampleScheduleConfig() string {
-	return sampleScheduleConfig
-}
-
-func (e *Linux) SampleAccountConfig() string {
-	return sampleAccountConfig
-}
-
-func (e *Linux) SampleConfig() string {
-	return sampleConfig
-}
-
-func (target *Linux) Setup() {
-	if target.IsRemote {
-		log.Info("create ssh session")
+func (e *Linux) Config(configType ConfigType) string {
+	switch configType {
+	case SCHEDULE:
+		return sampleScheduleConfig
+	case TEMPLATE:
+		return sampleTemplateConfig
+	case SERVER:
+		return sampleConfig
+	default:
+		return ""
 	}
 }
 
-func (e *Linux) Run(env *exporter.Env) error {
+func (target *Linux) Setup(env *Env) error {
+	return nil
+}
+
+func (e *Linux) Run(env *Env) error {
 	fmt.Printf("run '%s' through linux platform\n", e.Server)
 	fmt.Printf("env [%v]\n", env)
 	for _, command := range commands {
 		if command.Level > env.Level {
 			break
 		}
-		// if env.
-		log.Info("run command ", command.Id)
-		c := CommandInfo{
-			CmdLine: command.Text,
-			OutPath: filepath.Join(env.Datastore, command.Id),
-			Timeout: 30,
+		if env.DryRun {
+			log.Infof("command[%s] : %s", command.Id, command.Text)
+		} else {
+			c := CommandInfo{
+				CmdLine: command.Text,
+				OutPath: filepath.Join(env.Datastore, command.Id),
+				Timeout: 30,
+			}
+			c.ExecCommandRedirect()
 		}
-		c.ExecCommandRedirect()
 	}
 	return nil
 }
 
 func init() {
-	exporter.Add("linuxconf", func() exporter.Exporter {
+	AddExporter("linuxconf", func() Exporter {
 		return &Linux{
 			Server: "localhost",
 		}

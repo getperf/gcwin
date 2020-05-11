@@ -62,8 +62,8 @@ var sampleProjectConfig = `
 
 func (p *Project) SampleConfig() string {
   config := sampleProjectConfig
-  for _, exporter := range exporter.Exporters {
-    config += exporter().SampleScheduleConfig()
+  for _, exp := range exporter.Exporters {
+    config += exp().Config(exporter.SCHEDULE)
   }
   return config
 }

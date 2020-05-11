@@ -8,6 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// カレントディレクトリがベースディレクトリの場合はなにもしない
+// ベースディレクトリ以外の場合
+// 	指定ディレクトリが存在する場合はエラー
+// 	存在しない場合はプロジェクトディレクトリ作成
+
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create collector agent project",

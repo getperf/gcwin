@@ -7,6 +7,7 @@ import (
 
 	. "github.com/getperf/gcagent/common"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type Server struct {
@@ -40,19 +41,26 @@ func (s *Server) FillInInfo() error {
 	return nil
 }
 
-func (c *Config) ServerConfigs(job string) ([]string, error) {
-	configs := make([]string, 0, 100)
+func (c *Config) ServerConfigs(job string) (map[string]string, error) {
+	configs := make(map[string]string, 100)
 	servers, err := ioutil.ReadDir(c.NodeDir)
+	log.Info("NODEDIR : ", c.NodeDir)
+	log.Info("READDIR : ", err)
 	if err != nil {
 		return configs, errors.Wrap(err, "get configs")
 	}
 	for _, server := range servers {
-		filepath := c.ServerConfig(job, server.Name())
+		serverName := server.Name()
+		filepath := c.ServerConfig(job, serverName)
 		if ok, _ := CheckFile(filepath); ok {
-			configs = append(configs, filepath)
+			configs[serverName] = filepath
 		}
 	}
 	return configs, nil
+}
+
+func (c *Config) LocalHostConfig(job string) string {
+	return c.ServerConfig(job, c.Host)
 }
 
 func (c *Config) ServerConfig(job, server string) string {

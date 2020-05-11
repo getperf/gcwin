@@ -3,7 +3,7 @@ package vmwareconf
 import (
 	"fmt"
 
-	"github.com/getperf/gcagent/exporter"
+	. "github.com/getperf/gcagent/exporter"
 )
 
 type VMWare struct {
@@ -17,13 +17,11 @@ var sampleScheduleConfig = `
   timeout = 340
 `
 
-var sampleAccountConfig = `
-# VMWare account settings
-# Enter account information for vCenter users
-# Please specify the user id key in [[accounts.{User ID}]]
+var sampleTemplateConfig = `
+# VMWare template settings
+# Enter template information for vCenter users
 # 
 # example:
-#    [[accounts.vmmanager01]]
 #
 #    url = "192.168.10.100"    # vCenter URL
 #    user = "test_user"
@@ -36,33 +34,35 @@ var sampleConfig = `
   # export_level = 1
 `
 
-func (e *VMWare) Description() string {
-	return "Gather VMWare inventorys"
+func (e *VMWare) Label() string {
+	return "vCenter"
 }
 
-func (e *VMWare) SampleScheduleConfig() string {
-	return sampleScheduleConfig
+func (e *VMWare) Config(configType ConfigType) string {
+	switch configType {
+	case SCHEDULE:
+		return sampleScheduleConfig
+	case TEMPLATE:
+		return sampleTemplateConfig
+	case SERVER:
+		return sampleConfig
+	default:
+		return ""
+	}
 }
 
-func (e *VMWare) SampleAccountConfig() string {
-	return sampleAccountConfig
-}
-
-func (e *VMWare) SampleConfig() string {
-	return sampleConfig
-}
-
-func (e *VMWare) Setup() {
+func (e *VMWare) Setup(env *Env) error {
 	fmt.Printf("export '%s' through VMWare platform\n", e.Server)
+	return nil
 }
 
-func (e *VMWare) Run(env *exporter.Env) error {
+func (e *VMWare) Run(env *Env) error {
 	fmt.Printf("run '%s' through VMWare platform\n", e.Server)
 	return nil
 }
 
 func init() {
-	exporter.Add("vmwareconf", func() exporter.Exporter {
+	AddExporter("vmwareconf", func() Exporter {
 		return &VMWare{
 			Server: "localhost",
 		}

@@ -1,10 +1,13 @@
 package windowsconf
 
-type Command struct {
-	Level int    `toml:"level"`
-	Id    string `toml:"id"`
-	Text  string `toml:"text"`
-}
+// type Command struct {
+// 	Level int    `toml:"level"`
+// 	Id    string `toml:"id"`
+// 	Text  string `toml:"text"`
+// }
+import (
+	. "github.com/getperf/gcagent/exporter"
+)
 
 type Commands struct {
 	Commands []*Command

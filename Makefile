@@ -23,7 +23,7 @@ devel-deps:
 
 .PHONY: test
 test:
-	go test
+	go test ./agent/ ./common/ ./config/ ./exporter/
 
 .PHONY: lint
 lint: devel-deps

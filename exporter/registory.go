@@ -1,19 +1,22 @@
 package exporter
 
+type ConfigType int
+
+const (
+	SCHEDULE ConfigType = iota
+	ACCOUNT
+	SERVER
+	TEMPLATE
+)
+
 type Exporter interface {
-	// SampleScheduleConfig returns the default schedule configuration
-	SampleScheduleConfig() string
-
-	// SampleAccountConfig returns the default account configuration of servers
-	SampleAccountConfig() string
-
 	// SampleConfig returns the default configuration of the Exporter
-	SampleConfig() string
+	Config(configType ConfigType) string
 
-	// Description returns a one-sentence description on the Input
-	Description() string
+	// Label returns a one-sentence Label on the Input
+	Label() string
 
-	Setup()
+	Setup(env *Env) error
 	Run(env *Env) error
 }
 
@@ -21,6 +24,6 @@ type Creator func() Exporter
 
 var Exporters = map[string]Creator{}
 
-func Add(name string, creator Creator) {
+func AddExporter(name string, creator Creator) {
 	Exporters[name] = creator
 }

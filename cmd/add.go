@@ -8,6 +8,7 @@ import (
 )
 
 var si = config.Server{}
+var isTemplate bool
 
 var addCmd = &cobra.Command{
 	Use:     "add",
@@ -30,6 +31,7 @@ var addCmd = &cobra.Command{
 func init() {
 	agent.SetLogForeground()
 	// サブコマンドのフラグ定義
+	addCmd.PersistentFlags().BoolVarP(&isTemplate, "template", "t", false, "add template")
 	addCmd.PersistentFlags().StringVarP(&si.Server, "server", "s", "", "target server")
 	addCmd.PersistentFlags().StringVar(&si.Url, "url", "", "service url")
 	addCmd.PersistentFlags().StringVarP(&si.Ip, "ip", "i", "", "ip address")

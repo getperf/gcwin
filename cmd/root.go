@@ -3,11 +3,12 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
-	. "github.com/getperf/gcagent/common"
+	// "path/filepath"
+
+	// . "github.com/getperf/gcagent/common"
 	// homedir "github.com/mitchellh/go-homedir"
-	"github.com/pkg/errors"
+	// "github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -26,48 +27,20 @@ import (
 // 	ある場合は、 home 、 configPath にセット。
 // 	ない場合は、home、configPath を ""(未指定)にセット。
 
-const configName = "gcagent.toml"
-
-type bootSettings struct {
-	configPath string
-	home       string
-}
-
 var cfgFile string
-var bootEnv *bootSettings
-
-func makeBootSettings(configFile string) (*bootSettings, error) {
-	var boot bootSettings
-	// -c gcagent.toml 指定がある場合
-	fmt.Println("configFIle : ", configFile)
-	if configFile != "" {
-		// if !CheckExists(configFile) {
-		// 	return nil, fmt.Errorf("not found %s", configFile)
-		// }
-		if ok, err := CheckFile(configFile); !ok {
-			return nil, errors.Wrap(err, "make boot settings")
-		}
-		boot.configPath, _ = filepath.Abs(configFile)
-		boot.home = filepath.Dir(configFile)
-		// -c gcagent.toml 指定がない場合
-	} else {
-		currentDir, _ := os.Getwd()
-		configFile := filepath.Join(currentDir, configName)
-		if ok, _ := CheckFile(configFile); ok {
-			boot.configPath = configFile
-			boot.home = currentDir
-		}
-	}
-	return &boot, nil
-}
+var bootParameters BootParameters
 
 var rootCmd = &cobra.Command{
 	Use:   "gcagent",
 	Short: "Inventory collector agent.",
 	Long:  `Getconfig inventory collector agent.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		bootSettings, _ := makeBootSettings(cfgFile)
-		fmt.Println("Root command, config : ", bootSettings)
+		// if err := bootParameters.make(cfgFile); err != nil {
+		// 	fmt.Println(err)
+		// 	os.Exit(1)
+		// }
+		// bootSettings, _ := makeBootSettings(cfgFile)
+		fmt.Println("Root command, config : ", bootParameters)
 	},
 }
 
@@ -85,7 +58,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -94,15 +68,14 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	bootSettings, err := makeBootSettings(cfgFile)
-	if err != nil {
+	if err := bootParameters.make(cfgFile); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	// currentDir, _ := os.Getwd()
 	// fmt.Printf("Current Dir:%s\n", currentDir)
-	viper.SetConfigFile(bootSettings.configPath)
-	fmt.Printf("CFGFILE:%s\n", bootSettings.configPath)
+	viper.SetConfigFile(bootParameters.configPath)
+	fmt.Println("Init config : ", bootParameters)
 	// if cfgFile != "" {
 	// 	// Use config file from the flag.
 	// 	viper.SetConfigFile(cfgFile)
@@ -132,6 +105,5 @@ func initConfig() {
 	// 	fmt.Println(err)
 	// 	os.Exit(1)
 	// }
-	fmt.Println("Root command, config2 : ", bootSettings)
-
+	// fmt.Println("Root command, config2 : ", bootSettings)
 }

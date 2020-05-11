@@ -45,7 +45,7 @@ func TestInitAccountConfig(t *testing.T) {
 	defer os.RemoveAll(base)
 	project, _ := createSampleProject(base)
 	c := config.NewConfig(project.Home, config.NewConfigEnv())
-	err := initAccountConfig(c)
+	err := project.initAccountConfig(c)
 	if err != nil {
 		t.Error("init account config ", err)
 	}

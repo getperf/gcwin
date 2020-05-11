@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"github.com/getperf/gcagent/exporter"
-	_ "github.com/getperf/gcagent/exporter/all"
+  "github.com/getperf/gcagent/exporter"
+  _ "github.com/getperf/gcagent/exporter/all"
 )
 
 var sampleProjectConfig = `
@@ -99,9 +99,10 @@ debug_console = false
 `
 
 func (p *Project) SampleConfig() string {
-	config := sampleProjectConfig
-	for _, exporter := range exporter.Exporters {
-		config += exporter().SampleScheduleConfig()
-	}
-	return config
+  config := sampleProjectConfig
+  for _, exp := range exporter.Exporters {
+    // config += exporter().SampleScheduleConfig()
+    config += exp().Config(exporter.SCHEDULE)
+  }
+  return config
 }

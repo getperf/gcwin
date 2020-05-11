@@ -33,10 +33,10 @@ http_retry = 3
 
 # --------- Web service connection settings --------------------------------
 # Admin management web service url.
-service_url = "https://192.168.10.1:59443/"
+# service_url = "https://192.168.10.1:59443/"
 
 # Site key.
-site_key = "site1"
+# site_key = "site1"
 
 #---------- Exporter job schedule, Each platform collector setting.
 [jobs]
@@ -55,8 +55,10 @@ site_key = "site1"
   enable = true
   interval = 300
   timeout = 340
+  local_exec = true
   
   [jobs.windowsconf]
   enable = true
   interval = 300
   timeout = 340
+  local_exec = true

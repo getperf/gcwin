@@ -22,11 +22,20 @@ var sampleScheduleConfig = `
 var sampleTemplateConfig = `
 # When collecting the inventory of Windows platform, execute it locally.
 # Therefore, no template setting is required
+
+[[commands]]
+# Describe the additional command list. Added to the default command list for
+# Windows Inventory scenarios. The text parameter using escape codes such as
+# '\"', '\\', See these example,
+# id = "osver"   # unique key
+# level = 0      # command level [0-2]
+# text = "Get-ItemProperty \"HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\" | FL"
 `
 
 var sampleConfig = `
 # Required Endpoint Windows server name.
 server = "{{ .Server }}"
+template_id = "{{ .TemplateId }}"
 
 [[commands]]
 # Describe the additional command list. Added to the default command list for

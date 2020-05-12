@@ -15,7 +15,7 @@ import (
 
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "create collector agent project",
+	Short: "create collector agent project directory",
 	Long:  `create project`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

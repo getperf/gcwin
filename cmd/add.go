@@ -22,7 +22,7 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := project.Add(job, &si); err != nil {
+		if err := project.Add(job, &si, isTemplate); err != nil {
 			log.Fatal(err)
 		}
 	},
@@ -31,13 +31,13 @@ var addCmd = &cobra.Command{
 func init() {
 	agent.SetLogForeground()
 	// サブコマンドのフラグ定義
-	addCmd.PersistentFlags().BoolVarP(&isTemplate, "template", "t", false, "add template")
-	addCmd.PersistentFlags().StringVarP(&si.Server, "server", "s", "", "target server")
-	addCmd.PersistentFlags().StringVar(&si.Url, "url", "", "service url")
-	addCmd.PersistentFlags().StringVarP(&si.Ip, "ip", "i", "", "ip address")
-	addCmd.PersistentFlags().StringVarP(&si.UserId, "userid", "u", "", "user id")
-	addCmd.PersistentFlags().StringVar(&si.User, "su", "", "specific user")
-	addCmd.PersistentFlags().StringVar(&si.Password, "sp", "", "specific password")
+	addCmd.PersistentFlags().BoolVarP(&isTemplate, "template", "t", false, "Add template flag")
+	addCmd.PersistentFlags().StringVarP(&si.Server, "server", "s", "", "Target server name")
+	addCmd.PersistentFlags().StringVar(&si.Url, "url", "", "URL to access the target")
+	addCmd.PersistentFlags().StringVarP(&si.Ip, "ip", "i", "", "IP Address")
+	addCmd.PersistentFlags().StringVarP(&si.TemplateId, "id", "", "", "Template id")
+	addCmd.PersistentFlags().StringVarP(&si.User, "user", "u", "", "specific user")
+	addCmd.PersistentFlags().StringVarP(&si.Password, "password", "p", "", "specific password")
 
 	rootCmd.AddCommand(addCmd)
 }

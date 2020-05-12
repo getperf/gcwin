@@ -52,6 +52,12 @@
   # #Timeout sec
   # timeout = 340
 
+  [jobs.windowsconf]
+  enable = true
+  local_exec = true
+  interval = 86400
+  timeout = 340
+
   [jobs.golangconf]
   enable = true
   interval = 300
@@ -59,15 +65,11 @@
 
   [jobs.linuxconf]
   enable = true
+  local_exec = true
   interval = 300
   timeout = 340
 
   [jobs.vmwareconf]
   enable = true
   interval = 300
-  timeout = 340
-
-  [jobs.windowsconf]
-  enable = true
-  interval = 86400
   timeout = 340

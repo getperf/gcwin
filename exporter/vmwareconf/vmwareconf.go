@@ -7,7 +7,11 @@ import (
 )
 
 type VMWare struct {
-	Server string `toml:"server"`
+	Server     string `toml:"server"`
+	TemplateId string `toml:"user_id"`
+	Url        string `toml:"url"`
+	User       string `toml:"user"`
+	Password   string `toml:"password"`
 }
 
 var sampleScheduleConfig = `
@@ -26,12 +30,21 @@ var sampleTemplateConfig = `
 #    url = "192.168.10.100"    # vCenter URL
 #    user = "test_user"
 #    password = "P@ssword"
+
+url = "{{ .Url }}"
+user = "{{ .User }}"
+password = "{{ .Password }}"
 `
 
 var sampleConfig = `
-  ## Required VMWare Endpoint
-  # server = "localhost"
-  # export_level = 1
+## Required VMWare Endpoint
+# server = "localhost"
+# export_level = 1
+server = "{{ .Server }}"
+template_id = "{{ .TemplateId }}"
+url = "{{ .Url }}"
+user = "{{ .User }}"
+password = "{{ .Password }}"
 `
 
 func (e *VMWare) Label() string {

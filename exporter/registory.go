@@ -4,9 +4,8 @@ type ConfigType int
 
 const (
 	SCHEDULE ConfigType = iota
-	ACCOUNT
-	SERVER
 	TEMPLATE
+	SERVER
 )
 
 type Exporter interface {

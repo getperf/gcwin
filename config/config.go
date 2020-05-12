@@ -27,7 +27,6 @@ type Config struct {
 	BinDir        string // Project specific Executable file directory
 	OutDir        string // Metric collection directory
 	NodeDir       string // Server info directory
-	AccountDir    string // Server account info directory
 	TemplateDir   string // Server template info directory
 	WorkDir       string // Work directory
 	WorkCommonDir string // Common work directory
@@ -111,7 +110,6 @@ func NewConfig(home string, configEnv *ConfigEnv) *Config {
 	// ディレクトリ定義
 	config.OutDir = filepath.Join(varDir, "data")           // 採取データディレクトリ
 	config.NodeDir = filepath.Join(home, "node/")           // 採取対象定義ディレクトリ
-	config.AccountDir = filepath.Join(baseDir, "account")   // アカウント定義ディレクトリ
 	config.TemplateDir = filepath.Join(baseDir, "template") // テンプレート定義ディレクトリ
 	config.BinDir = filepath.Join(home, "bin")              // プロジェクトバイナリ
 	config.WorkDir = filepath.Join(tmpDir, workDir)         // ワークディレクトリ
@@ -150,7 +148,6 @@ func (config *Config) GetBaseDirs() []*string {
 	return []*string{
 		&config.OutDir,
 		&config.NodeDir,
-		&config.AccountDir,
 		&config.TemplateDir,
 		&config.WorkDir,
 		&config.WorkCommonDir,

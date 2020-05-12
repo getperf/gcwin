@@ -9,12 +9,12 @@ import (
 )
 
 type Linux struct {
-	Server   string `toml:"server"`
-	IsRemote bool   `toml:"is_remote"`
-	Ip       string `toml:"ip"`
-	UserId   string `toml:"user_id"`
-	User     string `toml:"specific_user"`
-	Password string `toml:"specific_password"`
+	Server     string `toml:"server"`
+	IsRemote   bool   `toml:"is_remote"`
+	Ip         string `toml:"ip"`
+	TemplateId string `toml:"user_id"`
+	User       string `toml:"user"`
+	Password   string `toml:"password"`
 }
 
 var sampleScheduleConfig = `
@@ -32,6 +32,9 @@ var sampleTemplateConfig = `
 # example:
 #    user = "someuser"
 #    password = "P@ssword"
+
+user = "{{ .User }}"
+password = "{{ .Password }}"
 `
 
 var sampleConfig = `
@@ -40,9 +43,9 @@ var sampleConfig = `
 server = "{{ .Server }}"
 is_remote = {{ .IsRemote }}
 ip = "{{ .Ip }}"
-user_id = "{{ .UserId }}"
-specific_user = "{{ .User }}"
-specific_password = "{{ .Password }}"
+template_id = "{{ .TemplateId }}"
+user = "{{ .User }}"
+password = "{{ .Password }}"
 `
 
 var commands = []Command{

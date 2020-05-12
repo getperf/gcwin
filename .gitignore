@@ -1,4 +1,6 @@
 /dist/*
+/template/*
+/node/*
 /var/*
 /build/*
 /vendor/*

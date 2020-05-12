@@ -2,4 +2,4 @@
 #
 server = "ostrich"
 is_remote = true
-user_id = "vmmanager01"
+template_id = "vmmanager01"

@@ -9,6 +9,7 @@ require (
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/golang/gddo v0.0.0-20190419222130-af0f2af80721
 	github.com/google/gops v0.3.7
+	github.com/imdario/mergo v0.3.9
 	github.com/inconshreveable/log15 v0.0.0-20200109203555-b30bc20e4fd1 // indirect
 	github.com/kardianos/minwinsvc v0.0.0-20151122163309-cad6b2b879b0
 	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible

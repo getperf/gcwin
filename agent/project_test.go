@@ -40,26 +40,15 @@ func TestProjectCreate(t *testing.T) {
 	}
 }
 
-func TestInitAccountConfig(t *testing.T) {
-	base, _ := ioutil.TempDir("", "project")
-	defer os.RemoveAll(base)
-	project, _ := createSampleProject(base)
-	c := config.NewConfig(project.Home, config.NewConfigEnv())
-	err := project.initAccountConfig(c)
-	if err != nil {
-		t.Error("init account config ", err)
-	}
-}
-
 func TestAddServerToProject(t *testing.T) {
 	base, _ := ioutil.TempDir("", "project")
 	// defer os.RemoveAll(base)
 	project, _ := createSampleProject(base)
 	server := config.NewServer("hoge")
-	if err := project.Add("windowsconf", server); err != nil {
+	if err := project.Add("windowsconf", server, false); err != nil {
 		t.Error("add windows server : ", err)
 	}
-	if err := project.Add("hoge", server); err == nil {
+	if err := project.Add("hoge", server, false); err == nil {
 		t.Error("add hoge server")
 	}
 }

@@ -13,11 +13,11 @@ import (
 )
 
 type Hoge struct {
-	Server   string `toml:"server"`
-	IP       string `toml:"ip"`
-	UserId   string `toml:"user_id"`
-	User     string `toml:"specific_user"`
-	Password string `toml:"specific_password"`
+	Server     string `toml:"server"`
+	IP         string `toml:"ip"`
+	TemplateId string `toml:"template_id"`
+	User       string `toml:"user"`
+	Password   string `toml:"password"`
 }
 
 func (e *Hoge) Label() string { return "Hoge" }
@@ -63,6 +63,8 @@ func createTask(jobName string) *Task {
 	return task
 }
 
+// Create task.
+
 func TestNewTask(t *testing.T) {
 	task := createTask("hogeconf")
 	if task.LocalExec != true {
@@ -79,6 +81,8 @@ func TestNewTask(t *testing.T) {
 	}
 }
 
+// Read nonexistent job.
+
 func TestNGNewTask(t *testing.T) {
 	cfg := createHogeConfig()
 	task, err := NewTask(cfg, "hogehogeconf")
@@ -86,6 +90,8 @@ func TestNGNewTask(t *testing.T) {
 		t.Error("new task unkown job")
 	}
 }
+
+// Create test env.
 
 func TestMakeExporterEnv(t *testing.T) {
 	task := createTask("hogeconf")
@@ -99,6 +105,8 @@ func TestMakeExporterEnv(t *testing.T) {
 		t.Error("make exporter env")
 	}
 }
+
+// Reading the server config file.
 
 func TestDecodeServer(t *testing.T) {
 	task := createTask("hogeconf")
@@ -115,12 +123,32 @@ func TestDecodeServer(t *testing.T) {
 	}
 }
 
+// Create local server structure with hostname 'ostrich' without the config file.
+
 func TestNoConfigLocalServer(t *testing.T) {
 	cfg := createHogeConfig()
 	cfg.Host = "hogehoge"
 	task, _ := NewTask(cfg, "hogeconf")
 	env, _ := task.MakeExporterEnv()
 	server, err := task.LocalServer(env)
+	t.Log(env)
+	t.Log(server)
+	if env.Datastore == "" || env.LocalExec != true || err != nil {
+		t.Errorf("local server config : %s", err)
+	}
+	if server.Label() != "Hoge" {
+		t.Error("create local server")
+	}
+}
+
+// Create local server structure with hostname 'ostrich'.
+// Only set the environment LocalExec is true, and reading the config file as is.
+
+func TestLocalServer(t *testing.T) {
+	task := createTask("hogeconf")
+	env, _ := task.MakeExporterEnv()
+	server, err := task.LocalServer(env)
+	t.Log(server)
 	if env.Datastore == "" || env.LocalExec != true || err != nil {
 		t.Error("local server config")
 	}
@@ -129,17 +157,17 @@ func TestNoConfigLocalServer(t *testing.T) {
 	}
 }
 
-func TestLocalServer(t *testing.T) {
-	task := createTask("hogeconf")
-	env, _ := task.MakeExporterEnv()
-	server, err := task.LocalServer(env)
-	if env.Datastore == "" || env.LocalExec != true || err != nil {
-		t.Error("local server config")
-	}
-	if server.Label() != "Hoge" {
-		t.Error("create local server")
-	}
-}
+// Create the server structure by reading the server config.
+//
+// testdata/task_test_home/node/ostrich/hogeconf.toml
+//   # Required Linux Endpoint
+//   #
+//   server = "ostrich"
+//   is_remote = true
+//   ip = "192.168.10.1"
+//   template_id = "admin01"
+//   user = "manager"
+//   password = "P@ssword"
 
 func TestRemoteServer(t *testing.T) {
 	task := createTask("hogeconf")
@@ -155,7 +183,24 @@ func TestRemoteServer(t *testing.T) {
 	}
 }
 
-func TestAccountUsingRemoteServer(t *testing.T) {
+// Create the server structure by reading the following two config files.
+//
+// testdata/task_test_home/node/cent7/hogeconf.toml
+//
+//   # Required Linux Endpoint
+//   #
+//   server = "cent7"
+//   is_remote = true
+//   ip = "192.168.0.5"
+//   template_id = "admin01"
+//
+// testdata/task_test_home/template/admin01/linuxconf.toml
+//
+//   user = "psadmin"
+//   password = "psadmin"
+
+func TestUsingTemplateRemoteServer(t *testing.T) {
+
 	task := createTask("hogeconf")
 	env, _ := task.MakeExporterEnv()
 	server, err := task.RemoteServer(env, "cent7")
@@ -163,7 +208,8 @@ func TestAccountUsingRemoteServer(t *testing.T) {
 		t.Error("local server config")
 	}
 	err = server.Run(env)
-	msg := "connect '192.168.0.5' by 'manager', run 'cent7' through Hoge"
+	// msg := "connect '192.168.0.5' by '', run 'cent7' through Hoge"
+	msg := "connect '192.168.0.5' by 'psadmin', run 'cent7' through Hoge"
 	if err.Error() != msg {
 		t.Errorf("message result : %s, expected : %s", err, msg)
 	}

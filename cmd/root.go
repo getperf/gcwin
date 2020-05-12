@@ -75,7 +75,7 @@ func initConfig() {
 	// currentDir, _ := os.Getwd()
 	// fmt.Printf("Current Dir:%s\n", currentDir)
 	viper.SetConfigFile(bootParameters.configPath)
-	fmt.Println("Init config : ", bootParameters)
+	// fmt.Println("Init config : ", bootParameters)
 	// if cfgFile != "" {
 	// 	// Use config file from the flag.
 	// 	viper.SetConfigFile(cfgFile)

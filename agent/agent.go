@@ -39,6 +39,9 @@ func InitAgent(c *config.Config) (*Agent, error) {
 		Home: c.Home,
 		cfg:  c,
 	}
+	if err := c.CheckConfig(); err != nil {
+		return &agent, errors.Wrap(err, "initialize config")
+	}
 	// PID ファイル更新
 	err := c.WriteProcInfo()
 	return &agent, err

@@ -7,17 +7,16 @@ import (
 
 	. "github.com/getperf/gcagent/common"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	Server   string `toml:"server"`
-	IsRemote bool   `toml:"is_remote"`
-	Url      string `toml:"url"`
-	Ip       string `toml:"ip"`
-	UserId   string `toml:"user_id"`
-	User     string `toml:"specific_user"`
-	Password string `toml:"specific_password"`
+	Server     string `toml:"server"`
+	IsRemote   bool   `toml:"is_remote"`
+	Url        string `toml:"url"`
+	Ip         string `toml:"ip"`
+	TemplateId string `toml:"template_id"`
+	User       string `toml:"user"`
+	Password   string `toml:"password"`
 }
 
 func NewServer(server string) *Server {
@@ -35,8 +34,8 @@ func (s *Server) FillInInfo() error {
 	} else {
 		s.IsRemote = true
 	}
-	if s.IsRemote == true && s.UserId == "" {
-		return fmt.Errorf("user_id must specified")
+	if s.IsRemote == true && s.TemplateId == "" && s.User == "" {
+		return fmt.Errorf("template_id or user must specified")
 	}
 	return nil
 }
@@ -44,8 +43,8 @@ func (s *Server) FillInInfo() error {
 func (c *Config) ServerConfigs(job string) (map[string]string, error) {
 	configs := make(map[string]string, 100)
 	servers, err := ioutil.ReadDir(c.NodeDir)
-	log.Info("NODEDIR : ", c.NodeDir)
-	log.Info("READDIR : ", err)
+	// log.Info("NODEDIR : ", c.NodeDir)
+	// log.Info("READDIR : ", err)
 	if err != nil {
 		return configs, errors.Wrap(err, "get configs")
 	}

@@ -51,23 +51,6 @@ func (p *Project) initConfigFile(configPath string) error {
 	return nil
 }
 
-func (p *Project) initAccountConfig(c *config.Config) error {
-	accountDir := c.AccountDir
-	log.Info("init account config ", accountDir)
-	for job, exp := range exporter.Exporters {
-		accountConfigPath := c.AccountConfig(job)
-		if ok, _ := CheckFile(accountConfigPath); !ok {
-			contents := []byte(exp().Config(exporter.ACCOUNT))
-			log.Debugf("account config %s : %s", job, accountConfigPath)
-			err := ioutil.WriteFile(accountConfigPath, contents, 0664)
-			if err != nil {
-				return errors.Wrap(err, "write account config")
-			}
-		}
-	}
-	return nil
-}
-
 func (p *Project) initHomeDirectory(c *config.Config) error {
 	createDirs := c.GetBaseDirs()
 	for _, createDir := range createDirs {
@@ -77,9 +60,6 @@ func (p *Project) initHomeDirectory(c *config.Config) error {
 	}
 	if err := p.initConfigFile(c.ConfigPath); err != nil {
 		return errors.Wrap(err, "initialize config")
-	}
-	if err := p.initAccountConfig(c); err != nil {
-		return errors.Wrap(err, "initialize account config")
 	}
 	return nil
 }
@@ -100,7 +80,7 @@ func (p *Project) Create() error {
 	return nil
 }
 
-func (p *Project) Add(job string, si *config.Server) error {
+func (p *Project) Add(job string, si *config.Server, isTemplate bool) error {
 	home := p.Home
 	// 対象ジョブのエクスポーターを取得
 	exp, ok := exporter.Exporters[job]
@@ -110,28 +90,40 @@ func (p *Project) Add(job string, si *config.Server) error {
 
 	// 対象ジョブ用のコンフィグファイルテンプレートを取得
 	text := exp().Config(exporter.SERVER)
+	if isTemplate {
+		text = exp().Config(exporter.TEMPLATE)
+		if si.TemplateId == "" {
+			return fmt.Errorf("'--id' must specified to create template")
+		}
+	}
 	tpl, err := template.New("config").Parse(text)
 	if err != nil {
-		return errors.Wrap(err, "parse config template")
+		return errors.Wrap(err, "creating config")
+	}
+
+	if err := si.FillInInfo(); err != nil {
+		return errors.Wrap(err, "creating config")
 	}
 
 	// コンフィグファイルを新規作成してオープン。既存のファイルがある場合は再作成します
 	c := config.NewConfig(home, config.NewConfigEnv())
-	nodePath := c.ServerConfig(job, si.Server)
+	var nodePath string
+	if isTemplate {
+		nodePath = c.TemplateConfig(job, si.TemplateId)
+	} else {
+		nodePath = c.ServerConfig(job, si.Server)
+	}
 	nodeFile, err := CreateAndOpenFile(nodePath)
 	if err != nil {
-		return errors.Wrap(err, "failed create config")
+		return errors.Wrap(err, "creating config")
 	}
 	defer nodeFile.Close()
 
 	// テンプレートからサーバコンフィグファイル生成
-	if err := si.FillInInfo(); err != nil {
-		return errors.Wrap(err, "check server info")
-	}
 	err = tpl.Execute(nodeFile, si)
 	if err != nil {
-		return errors.Wrap(err, "render config template")
+		return errors.Wrap(err, "creating config")
 	}
-	log.Info("create node config ", nodePath)
+	log.Info("config created : ", nodePath)
 	return nil
 }

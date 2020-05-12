@@ -3,6 +3,6 @@
 server = "ostrich"
 is_remote = true
 ip = "192.168.10.1"
-user_id = "admin01"
-specific_user = "manager"
-specific_password = "P@ssword"
+template_id = "admin01"
+user = "manager"
+password = "P@ssword"

@@ -15,7 +15,6 @@ type Env struct {
 	ErrMsgs   string
 
 	// バッチ用
-	AccountConfig   string
 	TemplateConfigs map[string]string
 	ServerConfigs   map[string]string
 }

@@ -3,4 +3,4 @@
 server = "ostrich"
 is_remote = true
 ip = "192.168.10.1"
-user_id = "admin01"
+template_id = "admin01"

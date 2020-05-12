@@ -14,7 +14,7 @@ package agent
 // 1. Setup : 初期処理
 // 		指定したジョブの関連情報を env 構造体に登録します
 // 			gcagent.toml の基本設定。採取レベルなど
-// 			account/{job}.toml のアカウント情報
+// 			template/{template}/{job}.toml のテンプレート情報
 // 			node/{server}/{job}.toml のサーバー情報
 // 		エクスポーターの Setup(env) を呼び出します
 // 			リモートで複数のサーバ情報のバッチ取得処理を実行します
@@ -49,6 +49,7 @@ import (
 	"github.com/getperf/gcagent/config"
 	"github.com/getperf/gcagent/exporter"
 	_ "github.com/getperf/gcagent/exporter/all"
+	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -65,15 +66,14 @@ const (
 )
 
 type Task struct {
-	Cfg           *config.Config
-	JobName       string
-	LocalExec     bool
-	Exp           exporter.Creator
-	Status        ProcMode  /**< Process status */
-	StartTime     time.Time /**< Start time(UTC) */
-	EndTime       time.Time /**< End time(UTC) */
-	ServerConfigs map[string]string
-	Datastores    map[string]*config.Datastore
+	Cfg        *config.Config
+	JobName    string
+	LocalExec  bool
+	Exp        exporter.Creator
+	Status     ProcMode  /**< Process status */
+	StartTime  time.Time /**< Start time(UTC) */
+	EndTime    time.Time /**< End time(UTC) */
+	Datastores map[string]*config.Datastore
 	// JobResults    map[string]config.JobResult
 }
 
@@ -114,14 +114,18 @@ func (task *Task) MakeExporterEnv() (*exporter.Env, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "preparing task")
 	}
+	templateConfigs, err := cfg.TemplateConfigs(jobName)
+	if err != nil {
+		return nil, errors.Wrap(err, "preparing task")
+	}
 	// 共通の設定の Level,DryRun 以外は既定値をセット
 	env := exporter.Env{
 		Level:  cfg.RunLevel,
 		DryRun: cfg.DryRun,
 
 		// バッチ用の定義ファイルパスをセット。バッチ以外は未使用
-		AccountConfig: cfg.AccountConfig(jobName),
-		ServerConfigs: serverConfigs,
+		TemplateConfigs: templateConfigs,
+		ServerConfigs:   serverConfigs,
 	}
 	return &env, nil
 }
@@ -134,6 +138,8 @@ func (task *Task) MakeServer(env *exporter.Env, host string, localExec bool) (ex
 	}
 	env.Datastore = ds.Path()
 	env.LocalExec = localExec
+
+	// ノード定義からサーバ情報取得
 	serverConfig, ok := env.ServerConfigs[host]
 	if ok {
 		_, err := toml.DecodeFile(serverConfig, server)
@@ -141,47 +147,28 @@ func (task *Task) MakeServer(env *exporter.Env, host string, localExec bool) (ex
 			return server, errors.Wrap(err, "making server")
 		}
 	}
-	//	src := reflect.ValueOf(server).Elem()
+	// テンプレートからサーバ情報取得
 	src := reflect.ValueOf(server).Elem()
-	userIdVal := src.FieldByName("UserId")
-	if userIdVal.CanSet() {
-		log.Info("Get User : ", userIdVal)
-		y := userIdVal.Interface().(string)
-		log.Info("Get User2 : ", y)
-		// if userIdVal == "admin01" {
-		// 	log.Info("Get User : ", userIdVal)
-		// }
+	templateIdVal := src.FieldByName("TemplateId")
+	templateId := ""
+	if templateIdVal.CanSet() {
+		templateId = templateIdVal.Interface().(string)
+		log.Info("Use template : ", templateId)
 	}
-	// log.Infof("src : %v", src)
-	// log.Infof("num field : %v", src.NumField())
-	// // フィールドの取得
-	// f := src.FieldByName("UserId")
-	// log.Infof("user id : %v, %v, %v", f, f.CanSet(), f.GetString()) //=> Name string
-	// f2 := src.FieldByName("Hoge")
-	// log.Infof("unkown field : %v, %v", f2, f2.CanSet()) //=> Name string
-	// if f, ok := src.FieldByName("UserID"); ok {
-	// 	log.Infof("user id : %v, %v", f.Name, f.Type) //=> Name string
-	// }
-
-	// rv := reflect.New(reflect.TypeOf(server)).Elem()
-	// log.Infof("rv : %v", rv)
-	// p("// フィールドの一覧")
-	// rt := rv.Type()
-	// p(rv, rt)
-	// for i := 0; i < rt.NumField(); i++ {
-	// 	// フィールドの取得
-	// 	f := rt.Field(i)
-	// 	// フィールド名
-	// 	p(f.Name)
-	// 	// 型
-	// 	p(f.Type)
-	// 	// タグ
-	// 	p(f.Tag)
-	// }
-
-	// if !localExec {
-	// 	// if err := task.SetAccount(env)
-	// }
+	if templateId != "" {
+		templateConfig, ok := env.TemplateConfigs[templateId]
+		if !ok {
+			return server, fmt.Errorf("template not found : %s", templateId)
+		}
+		templateServer := task.Exp()
+		_, err := toml.DecodeFile(templateConfig, templateServer)
+		if err != nil {
+			return server, errors.Wrap(err, "making server")
+		}
+		if err := mergo.Merge(server, templateServer); err != nil {
+			return server, errors.Wrap(err, "making server")
+		}
+	}
 	return server, nil
 }
 

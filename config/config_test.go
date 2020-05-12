@@ -16,7 +16,7 @@ func TestNewConfigEnv(t *testing.T) {
 
 func TestNewConfig(t *testing.T) {
 	config := NewConfig("../testdata/ptune/", NewConfigEnv())
-	t.Log(config.AccountDir)
+	t.Log(config.TemplateDir)
 	if config.Home != "../testdata/ptune/" {
 		t.Error("check home")
 	}
